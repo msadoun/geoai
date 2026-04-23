@@ -23,6 +23,7 @@ jobs:
             pip install -r requirements.txt
             pip install -e .
             pip install pytest pytest-cov
+            pip install spacy
 
       - save_cache:
           key: v1-pip-{{ arch }}-{{ .Branch }}-{{ checksum "requirements.txt" }}

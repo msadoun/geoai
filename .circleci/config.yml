@@ -1,0 +1,41 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/python:3.12
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-pip-{{ arch }}-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-pip-{{ arch }}-{{ .Branch }}
+            - v1-pip-{{ arch }}
+
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install -e .
+            pip install pytest pytest-cov
+
+      - save_cache:
+          key: v1-pip-{{ arch }}-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - ~/.cache/pip
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            pytest tests --verbose --cov=geoai --cov-report=term
+
+workflows:
+  test-and-build:
+    jobs:
+      - test
